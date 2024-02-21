@@ -1,5 +1,5 @@
 export interface IWritable {
-    formatAndWrite(basename:string, content: string[]):Promise<void>;
+    formatAndWrite(basename:string, content: Menu):Promise<void>;
 }
 
 export interface Menu {

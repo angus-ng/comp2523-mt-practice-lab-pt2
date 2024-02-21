@@ -1,39 +1,29 @@
 import { writeFile} from "fs/promises";
 import { IWritable } from "./IWritable";
 import { Menu } from "./IWritable";
-import { EOL } from "os";
 
 export class HtmlWriter implements IWritable{
     private async _write (basename:string, content:string){
         return await writeFile(`${basename}.html`, content);
     }
-    private _format(content:string[]){
-        const menuObj: Menu = {};
-
-        content.forEach((line) => {
-            let menuContents = line.split(",");
-            const mealType = menuContents[0];
-
-            if (mealType in menuObj){
-                menuObj[mealType].push(menuContents)
-            } else {
-                menuObj[mealType] = [];
-                menuObj[mealType].push(menuContents);
-            }
-            menuObj[mealType].sort()
-        })
-
+    private _format(menuObj: Menu){
         let newMenu = "";
         
         Object.keys(menuObj).forEach((mealType) => {
 
-        let combStr = ""; //string for all of the items in our food type
+        let combStr = ""; 
         for (const item in (menuObj[mealType])) { 
            let line =  menuObj[mealType][item];
-            combStr = combStr + `<tr><td>${line[3]}</td><td>${line[1]}</td><td>${line[2]}</td></tr>` //string is cost item and quantity , new line
+            combStr = combStr + `         
+                    <tr>
+                        <td>${line[3]}</td>
+                        <td>${line[1]}</td>
+                        <td>${line[2]}</td>
+                    </tr>` 
         }
         mealType = mealType[0].toUpperCase() + mealType.substring(1);
-        newMenu = newMenu+(`<th>* ${mealType} Items * ${combStr}</th>`); //our output for each food type
+        newMenu = newMenu + `
+                <th class="text-center" scope="col" colspan="3">* ${mealType} Items *</th>  ${combStr}`; 
         })
 
         newMenu = `<!DOCTYPE html>
@@ -41,19 +31,19 @@ export class HtmlWriter implements IWritable{
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Document</title>
+            <title>Menu</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         </head>
         <body>
-            <table>
-                ${newMenu}
+            <table class="table table-striped table-hover">${newMenu}
             </table>
         </body>
         </html>`
         return newMenu;
 
     }
-    async formatAndWrite(basename:string, content: string[]){
-            const newContent = this._format(content);
+    async formatAndWrite(basename:string, menuObj: Menu){
+            const newContent = this._format(menuObj);
             return await this._write(basename, newContent);
     }
 }
